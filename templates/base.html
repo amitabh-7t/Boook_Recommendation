@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Book Recommender{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        secondary: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                        },
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Custom animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes slideRight {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideLeft {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-in-out forwards;
+        }
+        
+        .animate-slide-up {
+            animation: slideUp 0.8s ease-out forwards;
+        }
+        
+        .animate-slide-right {
+            animation: slideRight 0.8s ease-out forwards;
+        }
+        
+        .animate-slide-left {
+            animation: slideLeft 0.8s ease-out forwards;
+        }
+        
+        .animate-scale-in {
+            animation: scaleIn 0.5s ease-out forwards;
+        }
+        
+        .animate-bounce-hover:hover {
+            animation: bounce 0.8s ease infinite;
+        }
+        
+        .animate-pulse-hover:hover {
+            animation: pulse 0.5s ease;
+        }
+        
+        .staggered-item {
+            opacity: 0;
+        }
+        
+        .loading-dots:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80%, 100% { content: ''; }
+        }
+        
+        /* Custom styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9ff;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(216, 241, 230, 0.46) 0%, rgba(233, 226, 248, 0.28) 90.3%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .floating-label-group {
+            position: relative;
+        }
+        
+        .floating-label {
+            position: absolute;
+            pointer-events: none;
+            left: 15px;
+            top: 18px;
+            transition: 0.2s ease all;
+        }
+        
+        .floating-input:focus ~ .floating-label,
+        .floating-input:not(:placeholder-shown) ~ .floating-label {
+            top: -10px;
+            left: 10px;
+            font-size: 14px;
+            opacity: 1;
+            background: white;
+            padding: 0 5px;
+            color: #6d28d9;
+            font-weight: 500;
+        }
+        
+        .character-counter {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        /* Modal animation */
+        .modal-container {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-container.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            transform: scale(0.7);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-container.active .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+        /* Book card hover effect */
+        .book-card {
+            transition: all 0.3s ease;
+        }
+        
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(to right, #6d28d9, #4f46e5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Staggered animation for items
+            const staggeredItems = document.querySelectorAll('.staggered-item');
+            staggeredItems.forEach((item, index) => {
+                setTimeout(() => {
+                    item.style.animation = 'slideUp 0.5s ease forwards';
+                    item.style.opacity = '1';
+                }, 100 * index);
+            });
+            
+            // Character counter for textarea
+            const textarea = document.querySelector('textarea[name="feedback"]');
+            const counter = document.querySelector('.character-counter');
+            
+            if (textarea && counter) {
+                textarea.addEventListener('input', function() {
+                    counter.textContent = `${this.value.length}/500`;
+                });
+                // Initialize counter
+                counter.textContent = `0/500`;
+            }
+            
+            // Loading animation for submit button
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function() {
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        const originalText = submitBtn.textContent;
+                        submitBtn.innerHTML = '<span class="loading-dots">Loading</span>';
+                        submitBtn.disabled = true;
+                        
+                        // Re-enable after 10 seconds in case of error
+                        setTimeout(() => {
+                            submitBtn.innerHTML = originalText;
+                            submitBtn.disabled = false;
+                        }, 10000);
+                    }
+                });
+            });
+        });
+        
+        // Modal functions
+        function openModal(index) {
+            const modal = document.getElementById(`modal-${index}`);
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeModal(index) {
+            const modal = document.getElementById(`modal-${index}`);
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        }
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modals = document.querySelectorAll('.modal-container');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+        });
+    </script>
+    {% block head %}{% endblock %}
+</head>
+<body class="flex flex-col min-h-screen">
+    <header class="w-full py-4 bg-white bg-opacity-90 shadow-sm sticky top-0 z-10 animate-fade-in">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold gradient-text">BookAI</a>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="/" class="text-gray-700 hover:text-secondary-600 transition-colors">Home</a></li>
+                    <li><a href="#about" class="text-gray-700 hover:text-secondary-600 transition-colors">About</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer class="w-full py-4 mt-8 bg-white bg-opacity-80 border-t border-gray-200 animate-fade-in sticky bottom-0" style="animation-delay: 1s;">
+        <div class="container mx-auto text-center text-gray-600">
+            <p>Made with ❤️ by @AT</p>
+        </div>
+    </footer>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

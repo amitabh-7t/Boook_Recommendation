@@ -1,0 +1,156 @@
+{% extends "base.html" %} 
+
+{% block title %}Your Personalized Book List{% endblock %} 
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-6xl">
+  <div class="text-center mb-10 animate-fade-in">
+    <h1 class="text-4xl font-bold gradient-text mb-2">Your Personalized Book List</h1>
+    <p class="text-gray-600">Based on your unique preferences</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+    {% for book in recommendations %}
+    <div
+      class="bg-white rounded-xl overflow-hidden shadow-lg book-card staggered-item"
+      onclick="openModal({{ loop.index0 }})"
+    >
+      <div class="bg-gradient-to-r from-secondary-600 to-primary-600 h-2"></div>
+      <div class="p-6">
+        <div class="flex items-start">
+          {% if book.image_url %}
+          <img
+            src="{{ book.image_url }}"
+            alt="Book Cover for {{ book.title }}"
+            class="w-24 h-36 rounded-md object-cover shadow-md"
+          />
+          {% else %}
+          <div class="w-24 h-36 rounded-md bg-gray-200 flex items-center justify-center shadow-md">
+            <span class="text-gray-400 text-3xl">📖</span>
+          </div>
+          {% endif %}
+          <div class="ml-4 flex-grow">
+            <h2 class="text-xl font-bold text-gray-800 mb-1 line-clamp-2">
+              {{ book.title }}
+            </h2>
+            <p class="text-sm text-gray-600 mb-2">
+              <span class="font-medium">Author(s):</span> {{ book.authors }}
+            </p>
+            <p class="text-sm text-gray-600 mb-2">
+              <span class="font-medium">Genre:</span> {{ book.genre }}
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <p class="text-gray-700 text-sm line-clamp-3">
+            {{ book.description }}
+          </p>
+          <div class="mt-3 text-right">
+            <span class="text-secondary-600 text-sm font-medium">Click for details</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div
+      id="modal-{{ loop.index0 }}"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 modal-container"
+    >
+      <div
+        class="bg-white w-full max-w-xl mx-4 rounded-lg shadow-2xl p-6 modal-content relative"
+      >
+        <button
+          onclick="closeModal({{ loop.index0 }})"
+          class="absolute top-3 right-3 text-gray-500 hover:text-red-600 text-2xl focus:outline-none"
+          aria-label="Close modal"
+        >
+          &times;
+        </button>
+        <div class="flex flex-col md:flex-row items-start gap-6">
+          {% if book.image_url %}
+          <img
+            src="{{ book.image_url }}"
+            alt="Book Cover for {{ book.title }}"
+            class="w-32 h-48 object-cover rounded-md shadow-md mx-auto md:mx-0"
+          />
+          {% else %}
+          <div class="w-32 h-48 rounded-md bg-gray-200 flex items-center justify-center shadow-md mx-auto md:mx-0">
+            <span class="text-gray-400 text-4xl">📖</span>
+          </div>
+          {% endif %}
+          <div class="flex-1">
+            <h2 class="text-2xl font-bold mb-1">{{ book.title }}</h2>
+            <p class="text-sm text-gray-700 mb-2">
+              by {{ book.authors }}
+            </p>
+            <p class="text-sm text-gray-600 mb-4 italic">
+              Genre: {{ book.genre }}
+            </p>
+          </div>
+        </div>
+        
+        <div class="mt-6">
+          <h3 class="text-lg font-semibold mb-2">Description</h3>
+          <p class="text-gray-800 text-sm mb-4">
+            {{ book.description }}
+          </p>
+          
+          <h3 class="text-lg font-semibold mb-2">Reviews</h3>
+          <div class="bg-gray-50 p-4 rounded-md text-sm text-gray-700 mb-4">
+            {{ book.reviews }}
+          </div>
+        </div>
+        
+        {% if book.link %}
+        <div class="text-center mt-6">
+          <a
+            href="{{ book.link }}"
+            target="_blank"
+            class="inline-block bg-gradient-to-r from-secondary-600 to-primary-600 text-white font-medium py-2 px-6 rounded-lg shadow-md hover:shadow-lg transform transition-all duration-300 animate-pulse-hover"
+            >Buy / Download</a
+          >
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div
+    class="bg-white rounded-xl shadow-lg overflow-hidden card-shadow animate-slide-up max-w-3xl mx-auto"
+  >
+    <div class="bg-gradient-to-r from-secondary-600 to-primary-600 py-4 px-6">
+      <h2 class="text-xl font-bold text-white">We'd Love Your Feedback</h2>
+    </div>
+
+    <div class="p-6">
+      <form action="/feedback/{{ user_id }}" method="POST" class="space-y-4">
+        <div class="relative">
+          <label for="feedback" class="block text-gray-700 font-medium mb-2"
+            >What did you think about these recommendations?</label
+          >
+          <textarea
+            name="feedback"
+            id="feedback"
+            rows="4"
+            maxlength="500"
+            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-transparent transition-all resize-none"
+          ></textarea>
+          <div class="character-counter"></div>
+        </div>
+
+        <div class="text-center pt-2">
+          <button
+            type="submit"
+            class="bg-gradient-to-r from-secondary-600 to-primary-600 text-white font-medium py-2 px-6 rounded-lg shadow-md hover:shadow-lg transform transition-all duration-300 animate-bounce-hover"
+          >
+            Submit Feedback
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
